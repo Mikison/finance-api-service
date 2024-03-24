@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.sonmiike.financeapiservice.category.UserCategoryRepository;
-import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFound;
+import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.expenses.ExpenseRepository;
 import pl.sonmiike.financeapiservice.income.IncomeRepository;
 import pl.sonmiike.financeapiservice.user.refreshToken.RefreshTokenRepository;
@@ -33,21 +33,21 @@ public class UserService {
 
     public UserEntity getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("User not found in the database"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found in the database"));
     }
 
 
     public UserDTO getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .map(userMapper::toDTO)
-                .orElseThrow(() -> new ResourceNotFound("User not found in the database"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found in the database"));
     }
 
 
     @Transactional
     public void deleteUserById(Long userid) {
         if (!userRepository.existsById(userid)) {
-            throw new ResourceNotFound("User not found in the database");
+            throw new ResourceNotFoundException("User not found in the database");
         }
         incomeRepository.deleteAllByUserUserId(userid);
         expenseRepository.deleteAllByUserUserId(userid);

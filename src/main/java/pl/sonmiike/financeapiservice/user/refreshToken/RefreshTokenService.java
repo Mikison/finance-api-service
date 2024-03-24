@@ -4,7 +4,7 @@ package pl.sonmiike.financeapiservice.user.refreshToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFound;
+import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRepository;
 
@@ -41,7 +41,7 @@ public class RefreshTokenService {
 
     public RefreshToken verifyRefreshToken(String refreshToken) {
         RefreshToken existingRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new ResourceNotFound("Invalid refresh token"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
 
         if (existingRefreshToken.getExpirationTime().isBefore(Instant.now())) {
             refreshTokenRepository.delete(existingRefreshToken);

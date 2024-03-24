@@ -24,10 +24,11 @@ public class IncomeController {
         return ResponseEntity.ok(incomeService.getUserIncome(userId, page, size));
     }
 
-    @GetMapping("/{incomeId}")
+    @GetMapping("/{incomeId}") // TODO Make it for either admin or user scope only
     public ResponseEntity<IncomeDTO> getIncomeById(@PathVariable Long incomeId, Authentication authentication) {
         Long userId = authService.getUserId(authentication);
-        return ResponseEntity.ok(incomeService.getIncomeById(incomeId, userId));
+        IncomeDTO incomeDTO = incomeService.getIncomeById(incomeId, userId);
+        return ResponseEntity.ok(incomeDTO);
     }
 
     @PostMapping
@@ -39,7 +40,7 @@ public class IncomeController {
     }
 
     @PutMapping("/{incomeId}")
-    public ResponseEntity<Income> updateIncome(@PathVariable Long incomeId, @RequestBody @Valid IncomeDTO incomeDTO, Authentication authentication) {
+    public ResponseEntity<IncomeDTO> updateIncome(@PathVariable Long incomeId, @RequestBody @Valid IncomeDTO incomeDTO, Authentication authentication) {
         if (!incomeId.equals(incomeDTO.getId())) {
             throw new IdNotMatchingException("Income id in path and body must be the same");
         }

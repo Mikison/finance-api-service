@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFound;
+import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.user.UserService;
 
 
@@ -18,14 +18,14 @@ public class IncomeService {
     private final UserService userService;
 
     public PagedIncomesDTO getUserIncome(Long userId, int page, int size) {
-        Page<Income> incomes = incomeRepository.findIncomeByUserUserId(userId, PageRequest.of(page,size));
+        Page<Income> incomes = incomeRepository.findByUserUserId(userId, PageRequest.of(page,size));
         return incomeMapper.toPagedDTO(incomes);
     }
 
     public IncomeDTO getIncomeById(Long id, Long userId) {
-        return incomeRepository.findIncomeByIdAndUserUserId(id, userId)
+        return incomeRepository.findByIdAndUserUserId(id, userId)
                 .map(incomeMapper::toDTO)
-                .orElseThrow(() -> new ResourceNotFound("Income not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Income not found"));
     }
 
     public void createIncome(AddIncomeDTO incomeDTO, Long userId) {
@@ -34,10 +34,10 @@ public class IncomeService {
         incomeRepository.save(income);
     }
 
-    public Income updateIncome(IncomeDTO incomeDTOtoUpdate, Long userId) {
+    public IncomeDTO updateIncome(IncomeDTO incomeDTOtoUpdate, Long userId) {
         Income income = incomeMapper.toEntity(incomeDTOtoUpdate);
         income.setUser(userService.getUserById(userId));
-        return incomeRepository.save(income);
+        return incomeMapper.toDTO(incomeRepository.save(income));
     }
     @Transactional
     public void deleteIncome(Long incomeId, Long userId) {

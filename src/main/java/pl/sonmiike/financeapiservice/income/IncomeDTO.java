@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Builder
 public class IncomeDTO {
 
-    @NotBlank
+    @NotNull
     private Long id;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

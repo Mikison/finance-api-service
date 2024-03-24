@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface IncomeRepository extends JpaRepository<Income, Long>{
 
-    Page<Income> findIncomeByUserUserId(Long userId, Pageable pageable);
+    Page<Income> findByUserUserId(Long userId, Pageable pageable);
 
-    Optional<Income> findIncomeByIdAndUserUserId(Long id, Long userId);
+    Optional<Income> findByIdAndUserUserId(Long id, Long userId);
 
     void deleteIncomeByIdAndUserUserId(Long id, Long userId);
 

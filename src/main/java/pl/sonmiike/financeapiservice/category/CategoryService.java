@@ -3,7 +3,7 @@ package pl.sonmiike.financeapiservice.category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFound;
+import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.expenses.ExpenseRepository;
 import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRepository;
@@ -41,7 +41,7 @@ public class CategoryService {
 
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Category with that id not found in database"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category with that id not found in database"));
     }
 
     public Category createAndAssignCategoryToUser(Long userId, AddCategoryDTO categoryDTO) {
@@ -60,10 +60,10 @@ public class CategoryService {
 
     public void assignCategoryToUser(Long userId, Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFound("Category with that id not found in database"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category with that id not found in database"));
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFound("User not found in the database"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found in the database"));
 
         UserCategory userCategory = UserCategory.builder()
                 .user(user)
@@ -77,7 +77,7 @@ public class CategoryService {
     @Transactional
     public void removeCategoryFromUser(Long userId, Long categoryId) {
         UserCategory userCategory = userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)
-                .orElseThrow(() -> new ResourceNotFound("User does not have this category assigned"));
+                .orElseThrow(() -> new ResourceNotFoundException("User does not have this category assigned"));
 
         // Remove all expenses from category that THIS user has
         expenseRepository.deleteAllByCategoryIdAndUserUserId(userId, categoryId);
