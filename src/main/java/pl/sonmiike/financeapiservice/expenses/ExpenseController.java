@@ -68,10 +68,13 @@ public class ExpenseController {
     }
 
     @DeleteMapping("/{expenseId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteExpense(@PathVariable Long expenseId, Authentication authentication) {
+    public ResponseEntity<Void> deleteExpense(@PathVariable Long expenseId, Authentication authentication) {
         Long userId = authService.getUserId(authentication);
-        expenseService.deleteExpense(expenseId, userId);
+        if (expenseService.getExpenseById(expenseId, userId).getUserId().equals(userId)) {
+            expenseService.deleteExpense(expenseId, userId);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
 }

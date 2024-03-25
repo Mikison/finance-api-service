@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import pl.sonmiike.financeapiservice.user.UserEntity;
@@ -17,15 +19,18 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    //TODO - extract it to application.properties later on.
-    private static final String SECRET_KEY = "OXgzaGZ3OTMzdWRpendib281cHF1bTRsODl1YWx5ejloc2E5Zm16bW5hNzBrcmt5c2p0c3Q5dXhrMDV6YWUzOGFldDNlNHZlajllZWduenlzdTd1Y3RyN2d6dWF1MjBiNm5ib2tjeW9hb3l4aTg3NGMybmV5a3F6NG1zN2E2c20=\n";
+    @Value("${custom.jwt.secretKey}")
+    private String SECRET_KEY;
+
+    private static String STATIC_SECRET_KEY;
+
+    @PostConstruct
+    public void init() {
+        STATIC_SECRET_KEY = SECRET_KEY;
+    }
 
     public static String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
-    }
-
-    public static String extractId(String token) {
-        return extractClaim(token, Claims::getId);
     }
 
     public static <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -44,7 +49,7 @@ public class JwtService {
     }
 
     private static Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(STATIC_SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -57,8 +62,6 @@ public class JwtService {
                 .builder()
                 .setClaims(extractClaims)
                 .setSubject(userDetails.getUsername())
-                .claim("id", userDetails.getUserId())
-//                .claim("username", userDetails.getEmail())
                 .claim("role", userDetails.getAuthorities())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 2000 * 60 * 24 * 60 * 7))

@@ -3,10 +3,14 @@ package pl.sonmiike.financeapiservice.income;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.user.UserService;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 @Service
@@ -32,6 +36,11 @@ public class IncomeService {
         Income income = incomeMapper.toEntity(incomeDTO);
         income.setUser(userService.getUserById(userId));
         incomeRepository.save(income);
+    }
+
+    public PagedIncomesDTO findIncomesWithFilters(String keyword, LocalDate dateFrom, LocalDate dateTo, BigDecimal amountFrom, BigDecimal amountTo, Pageable pageable) {
+        Page<Income> pagedFilteredIncomes = incomeRepository.findAll(IncomeFilterSortingSpecifications.withFilters(keyword, dateFrom, dateTo, amountFrom, amountTo), pageable);
+        return incomeMapper.toPagedDTO(pagedFilteredIncomes);
     }
 
     public IncomeDTO updateIncome(IncomeDTO incomeDTOtoUpdate, Long userId) {

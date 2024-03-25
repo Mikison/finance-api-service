@@ -3,12 +3,18 @@ package pl.sonmiike.financeapiservice.income;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pl.sonmiike.financeapiservice.exceptions.custom.IdNotMatchingException;
 import pl.sonmiike.financeapiservice.security.auth.AuthService;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +35,17 @@ public class IncomeController {
         Long userId = authService.getUserId(authentication);
         IncomeDTO incomeDTO = incomeService.getIncomeById(incomeId, userId);
         return ResponseEntity.ok(incomeDTO);
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<PagedIncomesDTO> getIncomes(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "dateFrom", required = false) LocalDate dateFrom,
+            @RequestParam(value = "dateTo", required = false) LocalDate dateTo,
+            @RequestParam(value = "fromAmount", required = false) BigDecimal fromAmount,
+            @RequestParam(value = "toAmount", required = false) BigDecimal toAmount,
+            @PageableDefault(sort = "date", direction = Sort.Direction.DESC)Pageable pageable) {
+        return ResponseEntity.ok(incomeService.findIncomesWithFilters(keyword, dateFrom, dateTo, fromAmount, toAmount, pageable));
     }
 
     @PostMapping
