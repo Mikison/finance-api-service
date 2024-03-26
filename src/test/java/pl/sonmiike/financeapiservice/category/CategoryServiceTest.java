@@ -11,6 +11,7 @@ import pl.sonmiike.financeapiservice.user.UserRepository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -72,5 +73,46 @@ public class CategoryServiceTest {
         assertTrue(result.containsAll(categoryDTOs));
         verify(categoryRepository).findAll();
         verify(categoryMapper, times(categories.size())).toDTO(any(Category.class));
+    }
+
+
+
+    @Test
+    void getUserCategories_ShouldReturnUserCategories() {
+        Long userId = 1L;
+        List<Category> categories = Arrays.asList(
+                Category.builder().id(1L).name("Food").iconUrl("url1").build(),
+                Category.builder().id(2L).name("Utilities").iconUrl("url2").build()
+        );
+        Set<CategoryDTO> categoryDTOs = categories.stream()
+                .map(category -> new CategoryDTO(category.getId(), category.getName(), category.getIconUrl()))
+                .collect(Collectors.toSet());
+
+        when(categoryRepository.findAllCategoriesByUserId(userId)).thenReturn(categories);
+        when(categoryMapper.toDTO(any(Category.class))).thenAnswer(i -> {
+            Category c = i.getArgument(0);
+            return new CategoryDTO(c.getId(), c.getName(), c.getIconUrl());
+        });
+
+        Set<CategoryDTO> result = categoryService.getUserCategories(userId);
+
+        assertEquals(categoryDTOs.size(), result.size());
+        assertTrue(result.containsAll(categoryDTOs));
+        verify(categoryRepository).findAllCategoriesByUserId(userId);
+        verify(categoryMapper, times(categories.size())).toDTO(any(Category.class));
+    }
+
+
+    @Test
+    void getCategoryById_ShouldReturnCategory() {
+        Long categoryId = 1L;
+        Category category = Category.builder().id(categoryId).name("Food").iconUrl("url1").build();
+
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+
+        Category result = categoryService.getCategoryById(categoryId);
+
+        assertEquals(category, result);
+        verify(categoryRepository).findById(categoryId);
     }
 }
