@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-public class ExpenseServiceTest {
+class ExpenseServiceTest {
 
     @Mock
     private ExpenseRepository expenseRepository;
@@ -51,16 +51,15 @@ public class ExpenseServiceTest {
     private AutoCloseable openMocks;
 
     @BeforeEach
-    public void init() {
+    void init() {
         openMocks = MockitoAnnotations.openMocks(this);
 
     }
 
     @AfterEach
-    public void close() throws Exception {
+    void close() throws Exception {
         openMocks.close();
     }
-
 
 
     @Test
@@ -85,7 +84,7 @@ public class ExpenseServiceTest {
 
 
     @Test
-    public void testGetUserExpensesByCategory() {
+    void testGetUserExpensesByCategory() {
         Long userId = 1L;
         Long categoryId = 1L;
         int page = 0;
@@ -107,7 +106,7 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    public void testGetExpenseById_Success() {
+    void testGetExpenseById_Success() {
         Long id = 1L;
         Long userId = 1L;
         Expense testExpense = new Expense();
@@ -125,7 +124,7 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    public void testGetExpenseById_NotFound_ThrowsException() {
+    void testGetExpenseById_NotFound_ThrowsException() {
         Long id = 1L;
         Long userId = 1L;
 
@@ -138,10 +137,10 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    public void createExpense_SuccessfulCreation() {
+    void createExpense_SuccessfulCreation() {
         Long userId = 1L, categoryId = 1L;
         AddExpesneDTO expenseDTO = new AddExpesneDTO("apteka", "leki", LocalDate.now(), BigDecimal.valueOf(150));
-        Expense expense = new Expense(1L,"apteka", "leki", LocalDate.now(), BigDecimal.valueOf(150), null, null);
+        Expense expense = new Expense(1L, "apteka", "leki", LocalDate.now(), BigDecimal.valueOf(150), null, null);
 
         UserCategory userCategory = new UserCategory();
         when(userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId))
@@ -158,7 +157,7 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    public void createExpense_IdNotMatchingException() {
+    void createExpense_IdNotMatchingException() {
         Long userId = 1L, categoryId = 1L;
         AddExpesneDTO expenseDTO = new AddExpesneDTO();
 
@@ -170,7 +169,7 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    public void findExpensesWithFilters_AllFilters() {
+    void findExpensesWithFilters_AllFilters() {
         String keyword = "test";
         LocalDate dateFrom = LocalDate.of(2020, 1, 1);
         LocalDate dateTo = LocalDate.of(2020, 12, 31);
@@ -194,7 +193,7 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    public void updateExpense_SuccessfulUpdate() {
+    void updateExpense_SuccessfulUpdate() {
         ExpenseDTO expenseDTO = new ExpenseDTO();
         expenseDTO.setId(1L);
         Long userId = 1L;
@@ -214,7 +213,7 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    public void updateExpense_ExpenseNotFound_ThrowsException() {
+    void updateExpense_ExpenseNotFound_ThrowsException() {
         ExpenseDTO expenseDTO = new ExpenseDTO();
         expenseDTO.setId(1L);
         Long userId = 1L;
@@ -228,7 +227,7 @@ public class ExpenseServiceTest {
 
 
     @Test
-    public void deleteExpense_VerifyRepositoryInteraction() {
+    void deleteExpense_VerifyRepositoryInteraction() {
         Long expenseId = 1L;
         Long userId = 1L;
 
