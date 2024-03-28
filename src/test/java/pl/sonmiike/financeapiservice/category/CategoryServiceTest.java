@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.expenses.ExpenseRepository;
+import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRepository;
 
 import java.util.Arrays;
@@ -15,8 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class CategoryServiceTest {
@@ -43,7 +44,6 @@ public class CategoryServiceTest {
     @BeforeEach
     public void init() {
         openMocks = MockitoAnnotations.openMocks(this);
-        categoryService = new CategoryService(categoryRepository, userCategoryRepository, expenseRepository, userRepository, categoryMapper);
     }
 
     @AfterEach
@@ -74,7 +74,6 @@ public class CategoryServiceTest {
         verify(categoryRepository).findAll();
         verify(categoryMapper, times(categories.size())).toDTO(any(Category.class));
     }
-
 
 
     @Test
@@ -115,4 +114,94 @@ public class CategoryServiceTest {
         assertEquals(category, result);
         verify(categoryRepository).findById(categoryId);
     }
+
+    @Test
+    void getCategoryById_ShouldThrowResourceNotFoundException() {
+        Long categoryId = 1L;
+
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.getCategoryById(categoryId));
+        verify(categoryRepository).findById(categoryId);
+    }
+
+    @Test
+    void testCreateAndAssignCategoryToUserWithNewCategory() {
+        // Given
+        Long userId = 1L;
+        AddCategoryDTO categoryDTO = AddCategoryDTO.builder().name("TestCategory").build();
+        Category category = Category.builder().id(1L).name("TestCategory").build();
+        UserEntity userEntity = UserEntity.builder().userId(userId).build();
+
+        when(categoryRepository.findByNameIgnoreCase(anyString())).thenReturn(null);
+        when(categoryMapper.toEntity(any(AddCategoryDTO.class))).thenReturn(category);
+        when(categoryRepository.save(any(Category.class))).thenReturn(category);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(userEntity));
+        when(categoryRepository.findById(anyLong())).thenReturn(Optional.of(category));
+        when(userCategoryRepository.save(any(UserCategory.class))).thenReturn(new UserCategory());
+
+        // When
+        Category createdCategory = categoryService.createAndAssignCategoryToUser(userId, categoryDTO);
+
+        assertEquals(category.getName(), createdCategory.getName());
+        verify(categoryRepository, times(1)).save(category);
+        verify(userCategoryRepository, times(1)).save(any(UserCategory.class));
+        assertNotNull(createdCategory);
+    }
+
+    @Test
+    void testCreateAndAssignCategoryToUserWithExistingCategory() {
+        // Given
+        Long userId = 1L;
+        AddCategoryDTO categoryDTO = AddCategoryDTO.builder().name("TestCategory").build();
+        Category category = Category.builder().id(1L).name("TestCategory").build();
+        UserEntity userEntity = UserEntity.builder().userId(userId).build();
+
+        when(categoryRepository.findByNameIgnoreCase(anyString())).thenReturn(category);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(userEntity));
+        when(categoryRepository.findById(anyLong())).thenReturn(Optional.of(category));
+        when(userCategoryRepository.save(any(UserCategory.class))).thenReturn(new UserCategory());
+
+        // When
+        Category createdCategory = categoryService.createAndAssignCategoryToUser(userId, categoryDTO);
+
+        assertEquals(category.getName(), createdCategory.getName());
+        verify(categoryRepository, never()).save(category);
+        verify(userCategoryRepository, times(1)).save(any(UserCategory.class));
+        assertNotNull(createdCategory);
+    }
+
+    @Test
+    void testAssignUserToNonExistingCategory() {
+        Long userId = 1L;
+        Long categoryId = 999L;
+
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(UserEntity.builder().userId(userId).build()));
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.assignCategoryToUser(userId, categoryId));
+
+        verify(userCategoryRepository, never()).save(any(UserCategory.class));
+    }
+
+    @Test
+    void testAssignCategoryToNonExistingUser() {
+        Long userId = 999L;
+        Long categoryId = 1L;
+        Category category = Category.builder().id(categoryId).name("TestCategory").build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.assignCategoryToUser(userId, categoryId));
+
+        verify(userCategoryRepository, never()).save(any(UserCategory.class));
+    }
+
+
+
+
+
+
+
 }

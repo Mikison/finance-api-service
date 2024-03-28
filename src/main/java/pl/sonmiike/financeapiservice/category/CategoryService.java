@@ -74,22 +74,21 @@ public class CategoryService {
     }
 
 
-    @Transactional
-    public void removeCategoryFromUser(Long userId, Long categoryId) {
-        UserCategory userCategory = userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("User does not have this category assigned"));
-
-        // Remove all expenses from category that THIS user has
-        expenseRepository.deleteAllByCategoryIdAndUserUserId(userId, categoryId);
-        // Remove category from user
-        userCategoryRepository.delete(userCategory);
-
-    }
+    // THINK IF THIS IS NECESSARY
+//    @Transactional
+//    public void removeCategoryFromUser(Long userId, Long categoryId) {
+//        UserCategory userCategory = userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)
+//                .orElseThrow(() -> new ResourceNotFoundException("User does not have this category assigned"));
+//
+//        // Remove all expenses from category that THIS user has
+//        expenseRepository.deleteAllByCategoryIdAndUserUserId(userId, categoryId);
+//        // Remove category from user
+//        userCategoryRepository.delete(userCategory);
+//
+//    }
 
     private String capitalizeFirstLetter(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
-        }
+        if (input == null || input.isEmpty()) return input;
         return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }

@@ -58,7 +58,7 @@ public class ExpenseService {
     }
 
     public void updateExpense(ExpenseDTO expenseDTOtoUpdate, Long userId) {
-        if (expenseRepository.existsById(expenseDTOtoUpdate.getId())) {
+        if (!expenseRepository.existsById(expenseDTOtoUpdate.getId())) {
             throw new IdNotMatchingException("Expense not found");
         }
         Expense expense = expenseMapper.toEntity(expenseDTOtoUpdate);
