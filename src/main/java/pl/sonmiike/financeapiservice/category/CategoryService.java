@@ -2,7 +2,6 @@ package pl.sonmiike.financeapiservice.category;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.expenses.ExpenseRepository;
 import pl.sonmiike.financeapiservice.user.UserEntity;
@@ -85,7 +84,22 @@ public class CategoryService {
 //        // Remove category from user
 //        userCategoryRepository.delete(userCategory);
 //
-//    }
+//
+//   }
+
+    public void removeCategoryFromUser(Long userId, Long categoryId) {
+        UserCategory userCategory = userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("User does not have this category assigned"));
+
+        // Remove all expenses from category that THIS user has
+        expenseRepository.deleteAllByCategoryIdAndUserUserId(userId, categoryId);
+        // Remove category from user
+        userCategoryRepository.delete(userCategory);
+    }
+
+    public void setCategoryBudgetAmount(Long userId, Long CategoryId) {
+        // TODO
+    }
 
     private String capitalizeFirstLetter(String input) {
         if (input == null || input.isEmpty()) return input;
