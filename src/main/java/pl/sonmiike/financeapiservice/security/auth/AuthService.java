@@ -9,6 +9,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.sonmiike.financeapiservice.exceptions.custom.EmailAlreadyTakenException;
 import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRepository;
 import pl.sonmiike.financeapiservice.user.UserRole;
@@ -25,6 +26,10 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(RegisterRequest registerRequest) {
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new EmailAlreadyTakenException("Email is already taken");
+        }
+
         var user = UserEntity
                 .builder()
                 .name(registerRequest.getName())

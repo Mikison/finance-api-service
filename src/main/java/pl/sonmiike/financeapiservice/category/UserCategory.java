@@ -29,4 +29,8 @@ public class UserCategory {
     private Category category;
 
     private LocalDateTime assignedAt;
+
+    // TODO create a enitity table to track the limit amount for each category for each user for each month
+//    private BigDecimal limitAmount;
+
 }

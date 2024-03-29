@@ -44,6 +44,9 @@ public class IncomeService {
     }
 
     public IncomeDTO updateIncome(IncomeDTO incomeDTOtoUpdate, Long userId) {
+        if (!incomeRepository.existsById(incomeDTOtoUpdate.getId())) {
+            throw new ResourceNotFoundException("Income not found");
+        }
         Income income = incomeMapper.toEntity(incomeDTOtoUpdate);
         income.setUser(userService.getUserById(userId));
         return incomeMapper.toDTO(incomeRepository.save(income));
