@@ -82,4 +82,9 @@ public class JwtService {
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
+
+    public String setSecretKey(String secretKey) {
+        SECRET_KEY = secretKey;
+        return SECRET_KEY;
+    }
 }
