@@ -7,16 +7,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 import pl.sonmiike.financeapiservice.category.Category;
 import pl.sonmiike.financeapiservice.user.UserEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,8 +29,7 @@ public class MonthlyBudget {
     private Long id;
 
     @Column(nullable = false)
-    private YearMonth yearMonth;
-
+    private String yearMonth;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal budgetAmount;
@@ -45,7 +44,6 @@ public class MonthlyBudget {
 
     @Column(nullable = false)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

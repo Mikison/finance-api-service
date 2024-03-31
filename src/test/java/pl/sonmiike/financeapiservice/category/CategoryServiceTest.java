@@ -6,11 +6,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import pl.sonmiike.financeapiservice.category.monthlyBudget.MonthlyBudget;
+import pl.sonmiike.financeapiservice.category.monthlyBudget.MonthlyBudgetDTO;
+import pl.sonmiike.financeapiservice.category.monthlyBudget.MonthlyBudgetRepository;
 import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.expenses.ExpenseRepository;
 import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRepository;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +38,9 @@ public class CategoryServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private MonthlyBudgetRepository monthlyBudgetRepository;
+
+    @Mock
     private CategoryMapper categoryMapper;
 
     @InjectMocks
@@ -53,13 +60,8 @@ public class CategoryServiceTest {
 
     @Test
     public void getAllCategories_ShouldReturnAllCategories() {
-        List<Category> categories = Arrays.asList(
-                Category.builder().id(1L).name("Food").iconUrl("url1").build(),
-                Category.builder().id(2L).name("Utilities").iconUrl("url2").build()
-        );
-        Set<CategoryDTO> categoryDTOs = categories.stream()
-                .map(category -> new CategoryDTO(category.getId(), category.getName(), category.getIconUrl()))
-                .collect(Collectors.toSet());
+        List<Category> categories = Arrays.asList(Category.builder().id(1L).name("Food").iconUrl("url1").build(), Category.builder().id(2L).name("Utilities").iconUrl("url2").build());
+        Set<CategoryDTO> categoryDTOs = categories.stream().map(category -> new CategoryDTO(category.getId(), category.getName(), category.getIconUrl())).collect(Collectors.toSet());
 
         when(categoryRepository.findAll()).thenReturn(categories);
         when(categoryMapper.toDTO(any(Category.class))).thenAnswer(i -> {
@@ -79,13 +81,8 @@ public class CategoryServiceTest {
     @Test
     void getUserCategories_ShouldReturnUserCategories() {
         Long userId = 1L;
-        List<Category> categories = Arrays.asList(
-                Category.builder().id(1L).name("Food").iconUrl("url1").build(),
-                Category.builder().id(2L).name("Utilities").iconUrl("url2").build()
-        );
-        Set<CategoryDTO> categoryDTOs = categories.stream()
-                .map(category -> new CategoryDTO(category.getId(), category.getName(), category.getIconUrl()))
-                .collect(Collectors.toSet());
+        List<Category> categories = Arrays.asList(Category.builder().id(1L).name("Food").iconUrl("url1").build(), Category.builder().id(2L).name("Utilities").iconUrl("url2").build());
+        Set<CategoryDTO> categoryDTOs = categories.stream().map(category -> new CategoryDTO(category.getId(), category.getName(), category.getIconUrl())).collect(Collectors.toSet());
 
         when(categoryRepository.findAllCategoriesByUserId(userId)).thenReturn(categories);
         when(categoryMapper.toDTO(any(Category.class))).thenAnswer(i -> {
@@ -199,9 +196,82 @@ public class CategoryServiceTest {
     }
 
 
+    @Test
+    void testUnassignCategoryFromUser_Success() {
+        Long userId = 1L;
+        Long categoryId = 1L;
+        UserCategory userCategory = UserCategory.builder().id(1L).build();
+
+        when(userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)).thenReturn(Optional.of(userCategory));
+
+        categoryService.removeCategoryFromUser(userId, categoryId);
+
+        assertEquals(userCategoryRepository.count(), 0);
+        verify(expenseRepository, times(1)).deleteAllByCategoryIdAndUserUserId(userId, categoryId);
+        verify(userCategoryRepository, times(1)).delete(userCategory);
+    }
+
+    @Test
+    void testUnassignCategoryFromUser_throwException() {
+        Long userId = 1L;
+        Long categoryId = 1L;
+
+        when(userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)).thenReturn(Optional.empty());
 
 
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.removeCategoryFromUser(userId, categoryId));
 
+        verify(expenseRepository, never()).deleteAllByCategoryIdAndUserUserId(userId, categoryId);
+        verify(userCategoryRepository, never()).delete(any(UserCategory.class));
+    }
+
+    @Test
+    void whenCreatingNewBudget_thenNewBudgetIsSaved() {
+        Long userId = 1L;
+        MonthlyBudgetDTO inputDTO = MonthlyBudgetDTO.builder().budgetToSet(BigDecimal.valueOf(1000)).build();
+        UserCategory mockUserCategory = UserCategory.builder().id(1L).build();
+
+        when(userCategoryRepository.findByUserUserIdAndCategoryId(userId, inputDTO.getCategoryId())).thenReturn(Optional.of(mockUserCategory));
+        when(monthlyBudgetRepository.updateBudgetAmountByUserIdAndCategoryIdAndYearMonth(eq(userId), eq(inputDTO.getCategoryId()), any(String.class), eq(inputDTO.getBudgetToSet()))).thenReturn(0);
+        when(monthlyBudgetRepository.save(any(MonthlyBudget.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Execution
+        MonthlyBudgetDTO result = categoryService.setCategoryBudgetAmount(userId, inputDTO);
+
+        // Verification
+        verify(monthlyBudgetRepository).save(any(MonthlyBudget.class));
+        assertNotNull(result);
+        assertEquals(inputDTO.getBudgetToSet(), result.getBudgetToSet());
+    }
+
+    @Test
+    void whenUpdatingExistingBudget_thenBudgetIsUpdated() {
+        // Setup
+        Long userId = 1L;
+        MonthlyBudgetDTO inputDTO = MonthlyBudgetDTO.builder().budgetToSet(BigDecimal.valueOf(1000)).build();
+        UserCategory mockUserCategory = UserCategory.builder().id(1L).build();
+        when(userCategoryRepository.findByUserUserIdAndCategoryId(userId, inputDTO.getCategoryId())).thenReturn(Optional.of(mockUserCategory));
+        when(monthlyBudgetRepository.updateBudgetAmountByUserIdAndCategoryIdAndYearMonth(eq(userId), eq(inputDTO.getCategoryId()), any(String.class), eq(inputDTO.getBudgetToSet()))).thenReturn(1);
+
+        MonthlyBudgetDTO result = categoryService.setCategoryBudgetAmount(userId, inputDTO);
+
+        // Verification
+        verify(monthlyBudgetRepository, never()).save(any(MonthlyBudget.class));
+        assertNotNull(result);
+        assertEquals(inputDTO.getBudgetToSet(), result.getBudgetToSet());
+    }
+
+    @Test
+    void testSettingBudgetWhenCategoryIsNotAssignedToUserOrDoesntExist() {
+        Long userId = 1L;
+        MonthlyBudgetDTO inputDTO = MonthlyBudgetDTO.builder().budgetToSet(BigDecimal.valueOf(1000)).build();
+
+        when(userCategoryRepository.findByUserUserIdAndCategoryId(userId, inputDTO.getCategoryId())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.setCategoryBudgetAmount(userId, inputDTO));
+
+        verify(monthlyBudgetRepository, never()).save(any(MonthlyBudget.class));
+    }
 
 
 }

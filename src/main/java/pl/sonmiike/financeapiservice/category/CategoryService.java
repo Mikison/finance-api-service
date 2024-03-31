@@ -2,12 +2,17 @@ package pl.sonmiike.financeapiservice.category;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.sonmiike.financeapiservice.category.monthlyBudget.MonthlyBudget;
+import pl.sonmiike.financeapiservice.category.monthlyBudget.MonthlyBudgetDTO;
+import pl.sonmiike.financeapiservice.category.monthlyBudget.MonthlyBudgetRepository;
 import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.expenses.ExpenseRepository;
 import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +25,7 @@ public class CategoryService {
     private final UserCategoryRepository userCategoryRepository;
     private final ExpenseRepository expenseRepository;
     private final UserRepository userRepository;
+    private final MonthlyBudgetRepository monthlyBudgetRepository;
 
     private final CategoryMapper categoryMapper;
 
@@ -72,33 +78,38 @@ public class CategoryService {
         userCategoryRepository.save(userCategory);
     }
 
-
-    // THINK IF THIS IS NECESSARY
-//    @Transactional
-//    public void removeCategoryFromUser(Long userId, Long categoryId) {
-//        UserCategory userCategory = userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)
-//                .orElseThrow(() -> new ResourceNotFoundException("User does not have this category assigned"));
-//
-//        // Remove all expenses from category that THIS user has
-//        expenseRepository.deleteAllByCategoryIdAndUserUserId(userId, categoryId);
-//        // Remove category from user
-//        userCategoryRepository.delete(userCategory);
-//
-//
-//   }
-
     public void removeCategoryFromUser(Long userId, Long categoryId) {
         UserCategory userCategory = userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("User does not have this category assigned"));
 
-        // Remove all expenses from category that THIS user has
         expenseRepository.deleteAllByCategoryIdAndUserUserId(userId, categoryId);
-        // Remove category from user
+
         userCategoryRepository.delete(userCategory);
     }
+    public MonthlyBudgetDTO setCategoryBudgetAmount(Long userId, MonthlyBudgetDTO monthlyBudgetDTO) {
+        UserCategory userCategory = userCategoryRepository.findByUserUserIdAndCategoryId(userId, monthlyBudgetDTO.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("User does not have this category assigned"));
 
-    public void setCategoryBudgetAmount(Long userId, Long CategoryId) {
-        // TODO
+        YearMonth currentYearMonth = YearMonth.now();
+        BigDecimal budgetToSet = monthlyBudgetDTO.getBudgetToSet();
+
+        int updatedRows = monthlyBudgetRepository.updateBudgetAmountByUserIdAndCategoryIdAndYearMonth(userId, monthlyBudgetDTO.getCategoryId(), currentYearMonth.toString(), budgetToSet);
+
+        if (updatedRows == 0) {
+            MonthlyBudget newBudget = MonthlyBudget.builder()
+                    .yearMonth(currentYearMonth.toString())
+                    .budgetAmount(budgetToSet)
+                    .spentAmount(BigDecimal.valueOf(0)) // COUNT THE EXPENSE FOR USER AND THAT CATEGORY
+                    .category(userCategory.getCategory())
+                    .user(userCategory.getUser())
+                    .build();
+            monthlyBudgetRepository.save(newBudget);
+        }
+
+        return MonthlyBudgetDTO.builder()
+                .categoryId(monthlyBudgetDTO.getCategoryId())
+                .budgetToSet(budgetToSet)
+                .build();
     }
 
     private String capitalizeFirstLetter(String input) {
