@@ -26,10 +26,10 @@ public class RefreshTokenService {
         RefreshToken refreshToken = user.getRefreshToken();
         // TODO If login and refresh is expired create new one
         if (refreshToken == null) {
-            long refrshTokenExpiration = 5 * 60 * 60 * 10000;
+            long refreshTokenExpiration = 5 * 60 * 60 * 10000;
             refreshToken = RefreshToken.builder()
                     .refreshToken(UUID.randomUUID().toString())
-                    .expirationTime(Instant.now().plusMillis(refrshTokenExpiration))
+                    .expirationTime(Instant.now().plusMillis(refreshTokenExpiration))
                     .user(user)
                     .build();
 

@@ -2,10 +2,8 @@ package pl.sonmiike.financeapiservice.security.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,16 +50,12 @@ public class AuthService {
 
 
     public AuthResponse login(LoginRequest loginRequest) {
-        try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),
                             loginRequest.getPassword()
                     )
             );
-        } catch (AuthenticationException e) {
-            throw new BadCredentialsException("Invalid email or password");
-        }
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         var accessToken = jwtService.generateToken(user);
         var refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
@@ -71,6 +65,8 @@ public class AuthService {
                 .refreshToken(refreshToken.getRefreshToken())
                 .build();
     }
+
+
 
     public Long getUserId(Authentication authentication) {
         UserEntity user = (UserEntity) authentication.getPrincipal();

@@ -4,13 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRole;
 
-import java.util.Collections;
-
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,19 +55,23 @@ public class JwtServiceTest {
         // Then
         assertTrue(isValid);
     }
-//
-//    @Test
-//    public void whenTokenIsInvalid_thenFailure() {
-//        // Given
-//        UserEntity userDetails = new UserEntity("testUser", "password", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-//        UserDetails anotherUserDetails = new org.springframework.security.core.userdetails.User("anotherUser", "password", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-//        String token = jwtService.generateToken(userDetails);
-//
-//        // When
-//        boolean isValid = jwtService.isTokenValid(token, anotherUserDetails);
-//
-//        // Then
-//        assertFalse(isValid);
-//    }
-//
+
+    @Test
+    public void whenTokenIsInvalid_thenFailure() {
+        // Given
+        UserEntity anotherUserDetails = UserEntity.builder()
+                .userId(2L)
+                .email("test2@test.com")
+                .username("testUser2")
+                .role(UserRole.USER)
+                .build();
+        String token = jwtService.generateToken(USER_DETAILS);
+
+        // When
+        boolean isValid = jwtService.isTokenValid(token, anotherUserDetails);
+
+        // Then
+        assertFalse(isValid);
+    }
+
 }
