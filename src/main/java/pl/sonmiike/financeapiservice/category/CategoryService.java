@@ -1,5 +1,6 @@
 package pl.sonmiike.financeapiservice.category;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.sonmiike.financeapiservice.category.monthlyBudget.MonthlyBudget;
@@ -59,11 +60,11 @@ public class CategoryService {
             categoryRepository.save(category);
         }
 
-        assignCategoryToUser(userId, category.getId());
+        assignCategoryToUser(userId, category.getId(), categoryDTO.getIconUrl());
         return category;
     }
 
-    public void assignCategoryToUser(Long userId, Long categoryId) {
+    public void assignCategoryToUser(Long userId, Long categoryId, String iconUrl) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category with that id not found in database"));
 
@@ -74,6 +75,7 @@ public class CategoryService {
                 .user(user)
                 .category(category)
                 .assignedAt(LocalDateTime.now())
+                .iconUrl(iconUrl)
                 .build();
         userCategoryRepository.save(userCategory);
     }
@@ -101,6 +103,7 @@ public class CategoryService {
                     .budgetAmount(budgetToSet)
                     .spentAmount(BigDecimal.valueOf(0)) // COUNT THE EXPENSE FOR USER AND THAT CATEGORY
                     .category(userCategory.getCategory())
+                    .updatedAt(LocalDateTime.now())
                     .user(userCategory.getUser())
                     .build();
             monthlyBudgetRepository.save(newBudget);
@@ -110,6 +113,12 @@ public class CategoryService {
                 .categoryId(monthlyBudgetDTO.getCategoryId())
                 .budgetToSet(budgetToSet)
                 .build();
+    }
+
+    @Transactional
+    public void deleteMonthlyBudget(Long userId, Long categoryId) {
+        YearMonth currentYearMonth = YearMonth.now();
+        monthlyBudgetRepository.deleteByUserUserIdAndCategoryIdAndYearMonth(userId, categoryId, currentYearMonth.toString());
     }
 
     private String capitalizeFirstLetter(String input) {

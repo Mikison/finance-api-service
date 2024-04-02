@@ -17,8 +17,7 @@ public class CategoryDTO {
     private Long id;
     @NotBlank
     private String name;
-    @NotBlank
-    private String iconUrl;
+
 
 
 

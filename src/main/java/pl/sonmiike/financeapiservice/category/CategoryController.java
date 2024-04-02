@@ -55,5 +55,12 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.setCategoryBudgetAmount(userId, monthlyBudgetDTO));
     }
 
+    @DeleteMapping("/budget/{categoryId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteBudgetForSpecificCategory(@PathVariable Long categoryId, Authentication authentication) {
+        Long userId = authService.getUserId(authentication);
+        categoryService.deleteMonthlyBudget(userId, categoryId);
+    }
+
 
 }

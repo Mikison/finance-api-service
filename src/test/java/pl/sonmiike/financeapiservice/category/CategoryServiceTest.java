@@ -60,13 +60,13 @@ public class CategoryServiceTest {
 
     @Test
     public void getAllCategories_ShouldReturnAllCategories() {
-        List<Category> categories = Arrays.asList(Category.builder().id(1L).name("Food").iconUrl("url1").build(), Category.builder().id(2L).name("Utilities").iconUrl("url2").build());
-        Set<CategoryDTO> categoryDTOs = categories.stream().map(category -> new CategoryDTO(category.getId(), category.getName(), category.getIconUrl())).collect(Collectors.toSet());
+        List<Category> categories = Arrays.asList(Category.builder().id(1L).name("Food").build(), Category.builder().id(2L).name("Utilities").build());
+        Set<CategoryDTO> categoryDTOs = categories.stream().map(category -> new CategoryDTO(category.getId(), category.getName())).collect(Collectors.toSet());
 
         when(categoryRepository.findAll()).thenReturn(categories);
         when(categoryMapper.toDTO(any(Category.class))).thenAnswer(i -> {
             Category c = i.getArgument(0);
-            return new CategoryDTO(c.getId(), c.getName(), c.getIconUrl());
+            return new CategoryDTO(c.getId(), c.getName());
         });
 
         Set<CategoryDTO> result = categoryService.getAllCategories();
@@ -81,13 +81,13 @@ public class CategoryServiceTest {
     @Test
     void getUserCategories_ShouldReturnUserCategories() {
         Long userId = 1L;
-        List<Category> categories = Arrays.asList(Category.builder().id(1L).name("Food").iconUrl("url1").build(), Category.builder().id(2L).name("Utilities").iconUrl("url2").build());
-        Set<CategoryDTO> categoryDTOs = categories.stream().map(category -> new CategoryDTO(category.getId(), category.getName(), category.getIconUrl())).collect(Collectors.toSet());
+        List<Category> categories = Arrays.asList(Category.builder().id(1L).name("Food").build(), Category.builder().id(2L).name("Utilities").build());
+        Set<CategoryDTO> categoryDTOs = categories.stream().map(category -> new CategoryDTO(category.getId(), category.getName())).collect(Collectors.toSet());
 
         when(categoryRepository.findAllCategoriesByUserId(userId)).thenReturn(categories);
         when(categoryMapper.toDTO(any(Category.class))).thenAnswer(i -> {
             Category c = i.getArgument(0);
-            return new CategoryDTO(c.getId(), c.getName(), c.getIconUrl());
+            return new CategoryDTO(c.getId(), c.getName());
         });
 
         Set<CategoryDTO> result = categoryService.getUserCategories(userId);
@@ -102,7 +102,7 @@ public class CategoryServiceTest {
     @Test
     void getCategoryById_ShouldReturnCategory() {
         Long categoryId = 1L;
-        Category category = Category.builder().id(categoryId).name("Food").iconUrl("url1").build();
+        Category category = Category.builder().id(categoryId).name("Food").build();
 
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
@@ -124,7 +124,6 @@ public class CategoryServiceTest {
 
     @Test
     void testCreateAndAssignCategoryToUserWithNewCategory() {
-        // Given
         Long userId = 1L;
         AddCategoryDTO categoryDTO = AddCategoryDTO.builder().name("TestCategory").build();
         Category category = Category.builder().id(1L).name("TestCategory").build();
@@ -176,7 +175,7 @@ public class CategoryServiceTest {
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(UserEntity.builder().userId(userId).build()));
 
-        assertThrows(ResourceNotFoundException.class, () -> categoryService.assignCategoryToUser(userId, categoryId));
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.assignCategoryToUser(userId, categoryId, ""));
 
         verify(userCategoryRepository, never()).save(any(UserCategory.class));
     }
@@ -190,7 +189,7 @@ public class CategoryServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
-        assertThrows(ResourceNotFoundException.class, () -> categoryService.assignCategoryToUser(userId, categoryId));
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.assignCategoryToUser(userId, categoryId, ""));
 
         verify(userCategoryRepository, never()).save(any(UserCategory.class));
     }

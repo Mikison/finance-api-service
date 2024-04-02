@@ -28,6 +28,8 @@ public class UserCategory {
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
+    private String iconUrl;
+
     private LocalDateTime assignedAt;
 
     // TODO create a enitity table to track the limit amount for each category for each user for each month
