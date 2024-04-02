@@ -30,6 +30,7 @@ public class CategoryService {
 
     private final CategoryMapper categoryMapper;
 
+
     public Set<CategoryDTO> getAllCategories() {
         return categoryRepository.findAll()
                 .stream()
@@ -117,6 +118,9 @@ public class CategoryService {
 
     @Transactional
     public void deleteMonthlyBudget(Long userId, Long categoryId) {
+        if (!userCategoryRepository.existsByUserUserIdAndCategoryId(userId, categoryId)) {
+            throw new ResourceNotFoundException("User does not have this category assigned");
+        }
         YearMonth currentYearMonth = YearMonth.now();
         monthlyBudgetRepository.deleteByUserUserIdAndCategoryIdAndYearMonth(userId, categoryId, currentYearMonth.toString());
     }
