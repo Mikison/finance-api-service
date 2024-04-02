@@ -7,12 +7,11 @@ import java.util.regex.Pattern;
 
 public class PasswordValidator implements ConstraintValidator<ValidPassword, String> {
 
-    private static final String PASSWORD_PATTERN = "/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/";
-    // Minimum eight characters, at least one uppercase letter, one lowercase letter and one number
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$");
+    // Minimum eight characters, at least one uppercase letter, one lowercase letter, and one number
 
     @Override
     public boolean isValid(String password, ConstraintValidatorContext constraintValidatorContext) {
-        Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
-        return password != null && pattern.matcher(password).matches();
+        return password != null && PASSWORD_PATTERN.matcher(password).matches();
     }
 }

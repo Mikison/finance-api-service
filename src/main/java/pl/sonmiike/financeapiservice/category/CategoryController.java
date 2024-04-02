@@ -35,9 +35,10 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody @Valid AddCategoryDTO categoryDTO, Authentication authentication) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createCategory(@RequestBody @Valid AddCategoryDTO categoryDTO, Authentication authentication) {
         Long userId = authService.getUserId(authentication);
-        return ResponseEntity.ok(categoryService.createAndAssignCategoryToUser(userId, categoryDTO));
+        categoryService.createAndAssignCategoryToUser(userId, categoryDTO);
     }
 
 
