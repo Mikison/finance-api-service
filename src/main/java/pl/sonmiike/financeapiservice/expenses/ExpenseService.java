@@ -6,7 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.sonmiike.financeapiservice.category.*;
+import pl.sonmiike.financeapiservice.category.CategoryService;
+import pl.sonmiike.financeapiservice.category.UserCategoryRepository;
 import pl.sonmiike.financeapiservice.exceptions.custom.IdNotMatchingException;
 import pl.sonmiike.financeapiservice.exceptions.custom.ResourceNotFoundException;
 import pl.sonmiike.financeapiservice.user.UserService;
@@ -25,6 +26,7 @@ public class ExpenseService {
     private final CategoryService categoryService;
 
     private final ExpenseMapper expenseMapper;
+
     public PagedExpensesDTO getUserExpenses(Long userId, int page, int size) {
         Page<Expense> pagedExpenses = expenseRepository.findExpenseByUserUserId(userId, PageRequest.of(page, size));
         return expenseMapper.toPagedDTO(pagedExpenses);
@@ -43,8 +45,9 @@ public class ExpenseService {
     }
 
     public void createExpense(AddExpesneDTO expenseDTO, Long userId, Long categoryId) {
-        userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId)
-                .orElseThrow(() -> new IdNotMatchingException("User does not have category with that id assigned"));
+        if (!userCategoryRepository.existsByUserUserIdAndCategoryId(userId, categoryId)) {
+            throw new IdNotMatchingException("User does not have category with that id assigned");
+        }
         Expense expense = expenseMapper.toEntity(expenseDTO);
         expense.setUser(userService.getUserById(userId));
 

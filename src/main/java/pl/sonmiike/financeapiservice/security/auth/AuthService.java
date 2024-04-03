@@ -70,6 +70,8 @@ public class AuthService {
 
     public Long getUserId(Authentication authentication) {
         UserEntity user = (UserEntity) authentication.getPrincipal();
+//        String email = authentication.getName();
+//        UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return user.getUserId();
     }
 }

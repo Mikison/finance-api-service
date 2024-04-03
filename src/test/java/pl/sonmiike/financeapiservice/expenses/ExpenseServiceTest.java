@@ -143,8 +143,7 @@ class ExpenseServiceTest {
         Expense expense = new Expense(1L, "apteka", "leki", LocalDate.now(), BigDecimal.valueOf(150), null, null);
 
         UserCategory userCategory = new UserCategory();
-        when(userCategoryRepository.findByUserUserIdAndCategoryId(userId, categoryId))
-                .thenReturn(Optional.of(userCategory));
+        when(userCategoryRepository.existsByUserUserIdAndCategoryId(userId, categoryId)).thenReturn(true);
         when(expenseMapper.toEntity(expenseDTO)).thenReturn(expense);
         when(userService.getUserById(userId)).thenReturn(new UserEntity());
         when(categoryService.getCategoryById(categoryId)).thenReturn(new Category());

@@ -40,7 +40,6 @@ public class CategoryService {
 
     public Set<CategoryDTO> getUserCategories(Long userId) {
        List<Category> categories = categoryRepository.findAllCategoriesByUserId(userId);
-
        return categories.stream()
                .map(categoryMapper::toDTO)
                .collect(Collectors.toSet());

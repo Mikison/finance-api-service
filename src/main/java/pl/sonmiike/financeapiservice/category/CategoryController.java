@@ -22,13 +22,13 @@ public class CategoryController {
     private final AuthService authService;
 
 
-    @GetMapping
+    @GetMapping("/all")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Set<CategoryDTO>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories()); // TODO think about moving it to Admin Controller
     }
 
-    @GetMapping("/user")
+    @GetMapping
     public ResponseEntity<Set<CategoryDTO>> getUserCategories(Authentication authentication) {
         Long userId = authService.getUserId(authentication);
         return ResponseEntity.ok(categoryService.getUserCategories(userId));
@@ -61,6 +61,8 @@ public class CategoryController {
         Long userId = authService.getUserId(authentication);
         categoryService.deleteMonthlyBudget(userId, categoryId);
     }
+
+
 
 
 }
