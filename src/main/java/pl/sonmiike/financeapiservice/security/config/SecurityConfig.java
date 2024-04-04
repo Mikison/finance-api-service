@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/admin/users/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/v1/admin/users/**").hasRole("ADMIN")
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedHandler(customAccessDeniedHandler)

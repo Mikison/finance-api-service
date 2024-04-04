@@ -34,7 +34,7 @@ public class AuthService {
                 .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .role(UserRole.USER)
+                .role(UserRole.ROLE_USER)
                 .build();
 
         UserEntity savedUser = userRepository.save(user);
