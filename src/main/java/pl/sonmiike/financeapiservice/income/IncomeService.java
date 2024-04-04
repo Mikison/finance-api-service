@@ -43,6 +43,7 @@ public class IncomeService {
         return incomeMapper.toPagedDTO(pagedFilteredIncomes);
     }
 
+    @Transactional
     public IncomeDTO updateIncome(IncomeDTO incomeDTOtoUpdate, Long userId) {
         if (!incomeRepository.existsById(incomeDTOtoUpdate.getId())) {
             throw new ResourceNotFoundException("Income not found");

@@ -60,6 +60,7 @@ public class ExpenseService {
         return expenseMapper.toPagedDTO(pagedFilteredExpenses);
     }
 
+    @Transactional
     public void updateExpense(ExpenseDTO expenseDTOtoUpdate, Long userId) {
         if (!expenseRepository.existsById(expenseDTOtoUpdate.getId())) {
             throw new IdNotMatchingException("Expense not found");

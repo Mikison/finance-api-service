@@ -15,6 +15,7 @@ import pl.sonmiike.financeapiservice.user.UserEntity;
 import pl.sonmiike.financeapiservice.user.UserRepository;
 
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -272,5 +273,28 @@ public class CategoryServiceTest {
         verify(monthlyBudgetRepository, never()).save(any(MonthlyBudget.class));
     }
 
+    @Test
+    void testDeleteMonthlyBudgedWithCategoryAssigned() {
+        Long userId = 1L;
+        Long categoryId = 1L;
+        YearMonth currentYearMonth = YearMonth.now();
+        when(userCategoryRepository.existsByUserUserIdAndCategoryId(userId, categoryId)).thenReturn(true);
+
+        categoryService.deleteMonthlyBudget(userId, categoryId);
+
+        verify(monthlyBudgetRepository, times(1)).deleteByUserUserIdAndCategoryIdAndYearMonth(userId, categoryId, currentYearMonth.toString());
+    }
+
+    @Test
+    void testDeleteMonthlyBudgedWithoutCategoryAssigned() {
+        Long userId = 1L;
+        Long categoryId = 1L;
+        YearMonth currentYearMonth = YearMonth.now();
+        when(userCategoryRepository.existsByUserUserIdAndCategoryId(userId, categoryId)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.deleteMonthlyBudget(userId, categoryId));
+
+        verify(monthlyBudgetRepository, never()).deleteByUserUserIdAndCategoryIdAndYearMonth(userId, categoryId, currentYearMonth.toString());
+    }
 
 }

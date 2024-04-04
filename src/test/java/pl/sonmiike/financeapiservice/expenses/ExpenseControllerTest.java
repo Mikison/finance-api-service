@@ -135,6 +135,21 @@ class ExpenseControllerTest {
                 .andExpect(status().isNoContent());
     }
 
+    @Test
+    void deleteExpense_DeletesExpenseThatExistsNotForThisUser() throws Exception {
+        Long userId = 1L;
+        Long expenseId = 3L;
+        expenseDTO.setUserId(3L);
+        Mockito.when(authService.getUserId(Mockito.any())).thenReturn(userId);
+        Mockito.when(expenseService.getExpenseById(expenseId, userId)).thenReturn(expenseDTO);
+        Mockito.doNothing().when(expenseService).deleteExpense(expenseId, userId);
+
+        mockMvc.perform(delete("/me/expenses/{expenseId}", expenseId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+
 
 
 

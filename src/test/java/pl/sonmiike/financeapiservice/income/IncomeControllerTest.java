@@ -137,6 +137,20 @@ public class IncomeControllerTest {
     }
 
     @Test
+    void updateIncome_ThrowsIdNotMatchingException() throws Exception {
+        Long userId = 1L;
+        given(authService.getUserId(any())).willReturn(userId);
+        given(incomeService.updateIncome(any(IncomeDTO.class), eq(userId))).willReturn(incomeDTO);
+
+        System.out.println(incomeDTO);
+        mockMvc.perform(put("/me/income/{incomeId}", 5L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(incomeDTO))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void deleteIncome_DeletesIncomeSuccessfully() throws Exception {
         Long userId = 1L;
         Long incomeId = 2L;
