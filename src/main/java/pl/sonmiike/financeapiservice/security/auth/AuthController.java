@@ -39,7 +39,6 @@ public class AuthController {
 
         String newAccessToken = jwtService.generateToken(user);
 
-
         return ResponseEntity.ok(AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(refreshToken.getRefreshToken())

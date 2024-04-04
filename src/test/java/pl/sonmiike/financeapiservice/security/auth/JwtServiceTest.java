@@ -21,7 +21,7 @@ public class JwtServiceTest {
             .userId(1L)
             .email("test@test.com")
             .username("testUser")
-            .role(UserRole.USER)
+            .role(UserRole.ROLE_USER)
             .build();
 
 
@@ -63,7 +63,7 @@ public class JwtServiceTest {
                 .userId(2L)
                 .email("test2@test.com")
                 .username("testUser2")
-                .role(UserRole.USER)
+                .role(UserRole.ROLE_USER)
                 .build();
         String token = jwtService.generateToken(USER_DETAILS);
 

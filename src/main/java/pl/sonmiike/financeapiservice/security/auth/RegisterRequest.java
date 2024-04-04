@@ -20,8 +20,8 @@ public class RegisterRequest {
     @Size(min = 3, max = 30)
     private String name;
 
-    @ValidEmail
     @NotNull
+    @ValidEmail
     private String email;
 
     @NotBlank

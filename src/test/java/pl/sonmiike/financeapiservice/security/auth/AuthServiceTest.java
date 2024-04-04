@@ -65,7 +65,7 @@ public class AuthServiceTest {
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.USER)
+                .role(UserRole.ROLE_USER)
                 .build();
         String uuid = UUID.randomUUID().toString();
         RefreshToken refreshToken = new RefreshToken(1L, uuid , Instant.now().plusSeconds(86400), null);
