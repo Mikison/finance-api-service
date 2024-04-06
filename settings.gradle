@@ -1,0 +1,3 @@
+rootProject.name = 'buget-finance-planer'
+
+include('finance-api-service')
